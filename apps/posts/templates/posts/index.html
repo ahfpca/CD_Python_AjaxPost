@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Posts</title>
+        {% load static %}
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <style type="text/css">
+        </style>
+    </head>
+    <body>
+        <br>
+        <div class="container">
+            <div class="row">
+                {% for msg in messages %}
+                    <h3 class="text-danger">{{msg}}</h3>
+                {% endfor %}
+                <form action="/posts/post" method="post" id="post_note_form">
+                    {% csrf_token %}
+                    <textarea name="note" id="note" cols="100%" rows="5" placeholder="Note"></textarea>
+                    <div>
+                        <button class="btn btn-success align-middle" type="submit">Post it!</button>
+                    </div>
+                </form>
+            </div>
+            <br>
+            <div class="row" id="posted_list">
+                {% for rec in records %}
+                <div class="panel panel-info">
+                    <div class="panel-heading">{{rec.created_at}}</div>
+                    <div class="panel-body">{{rec.note}}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <!-- Bootstrap -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script>
+            $('#post_note_form').submit(function(e) {
+                e.preventDefault()
+                //console.log('Sending Ajax request to', $(this).attr('action'))
+                //console.log('Submitting the following data', $(this).serialize())
+                $.ajax({
+                    url: $(this).attr('action'), /* Where should this go? */
+                    method: 'post', /* Which HTTP verb? */
+                    data: $(this).serialize(), /* Any data to send along? */
+                    success: function(serverResponse) { /* What code should we run when the server responds? */
+                        console.log("Received this from server:", serverResponse)
+                        //console.log("Now, I can use the serverResponse to manipulate the DOM")
+                        //$('#posted_list').html(serverResponse)
+                        var html = ""
+                        for (var i in serverResponse) {
+                            tag = '<div class="panel panel-info"><div class="panel-heading">' + serverResponse[i].fields.created_at + '</div><div class="panel-body">' + serverResponse[i].fields.note + '</div></div>';
+                            html += tag;
+                        }
+                        $('#posted_list').html(html)
+                    }
+                })
+            });
+        </script>
+    </body>
+</html>
